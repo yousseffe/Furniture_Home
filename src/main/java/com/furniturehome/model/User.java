@@ -3,6 +3,7 @@ package com.furniturehome.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -32,4 +33,9 @@ public class User {
 
     private String role;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Cart cart;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Favorite> favorites;
 }

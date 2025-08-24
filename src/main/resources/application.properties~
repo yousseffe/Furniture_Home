@@ -5,8 +5,8 @@ spring.datasource.password=123456
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
-#server.port=8080
-server.port=9080
+server.port=8080
+
 # location to store uploaded files (relative to app working dir or absolute)
 app.upload.dir=uploads
 
