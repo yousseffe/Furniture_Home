@@ -2,9 +2,10 @@ package com.furniturehome.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.UUID;
 
 @Entity
-@Table(name = "order_item")
+@Table(name = "order_items")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,13 +14,19 @@ import lombok.*;
 public class OrderItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_item_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "order_item_id", updatable = false, nullable = false,
+            columnDefinition = "BINARY(16)")
+    private UUID id;
 
+    @Column(nullable = false)
     private Integer quantity;
 
-    private Double total;
+    @Column(nullable = false)
+    private Double unitPrice;
+
+//    @Column(nullable = false)
+//    private Double total;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
@@ -29,6 +36,13 @@ public class OrderItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @Transient
+    public Double getTotalPrice() {
+        if (unitPrice == null || quantity == null) {
+            return 0.0;
+        }
+        return unitPrice * quantity;
+    }
 }
 
 // many to one for orders
