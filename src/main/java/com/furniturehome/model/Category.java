@@ -24,6 +24,7 @@ public class Category {
 
     private String description;
 
+    // optional bidirectional relationship
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
 }

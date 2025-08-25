@@ -2,196 +2,205 @@ package com.furniturehome.service;
 
 import com.furniturehome.dto.ProductDTO;
 import com.furniturehome.dto.ProductImageDTO;
+import com.furniturehome.exception.BadRequestException;
+import com.furniturehome.exception.ResourceNotFoundException;
 import com.furniturehome.model.Category;
 import com.furniturehome.model.Product;
 import com.furniturehome.model.ProductImage;
 import com.furniturehome.repository.CategoryRepository;
 import com.furniturehome.repository.ProductImageRepository;
 import com.furniturehome.repository.ProductRepository;
-import jakarta.transaction.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
 
-    private final Logger log = LoggerFactory.getLogger(ProductService.class);
-
     private final ProductRepository productRepository;
-    private final ProductImageRepository productImageRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductImageRepository productImageRepository;
     private final Path uploadDir;
 
     public ProductService(ProductRepository productRepository,
-                          ProductImageRepository productImageRepository,
                           CategoryRepository categoryRepository,
+                          ProductImageRepository productImageRepository,
                           @Value("${app.upload.dir:uploads}") String uploadDir) throws IOException {
         this.productRepository = productRepository;
-        this.productImageRepository = productImageRepository;
         this.categoryRepository = categoryRepository;
+        this.productImageRepository = productImageRepository;
+
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Files.createDirectories(this.uploadDir);
+        if (!Files.exists(this.uploadDir)) {
+            Files.createDirectories(this.uploadDir);
+        }
     }
 
-    @Transactional
-    public ProductDTO createProduct(String name,
-                                    String description,
-                                    Double price,
-                                    Double priceBeforeDiscount,
-                                    Long categoryId,
-                                    MultipartFile[] images) throws IOException {
+    public ProductDTO createProduct(
+            String name,
+            String description,
+            Double price,
+            Double priceBeforeDiscount,
+            Long categoryId,
+            MultipartFile[] images
+    ) throws IOException {
+
+        // Validation
+        if (name == null || name.trim().isEmpty()) {
+            throw new BadRequestException("Product name must not be empty.");
+        }
+        if (price == null || price <= 0) {
+            throw new BadRequestException("Price must be greater than 0.");
+        }
+        if (priceBeforeDiscount != null && priceBeforeDiscount < price) {
+            throw new BadRequestException("Price before discount must be greater than or equal to price.");
+        }
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new NoSuchElementException("Category not found: " + categoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
 
-    	
-        Product product = Product.builder()
-                .name(name)
-                .description(description)
-                .price(price)
-                .priceBeforeDiscount(priceBeforeDiscount)
-                .category(category)
-                .images(new ArrayList<>())
-                .build();
-
-        storeAndAttachImages(product, images);
+        // Create Product
+        Product product = new Product();
+        product.setName(name);
+        product.setDescription(description);
+        product.setPrice(price);
+        product.setPriceBeforeDiscount(priceBeforeDiscount);
+        product.setCategory(category);
 
         Product saved = productRepository.save(product);
-        
+
+        // Save Images
+        if (images != null) {
+            for (MultipartFile image : images) {
+                if (image.isEmpty()) continue;
+
+                String filename = UUID.randomUUID() + "_" + image.getOriginalFilename();
+                Path target = uploadDir.resolve(filename);
+                Files.copy(image.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+
+                ProductImage img = new ProductImage();
+                img.setImgUrl(filename);
+                img.setProduct(saved);
+                productImageRepository.save(img);
+            }
+        }
+
         return toDTO(saved);
     }
 
     public ProductDTO getProduct(Long id) {
-        Product p = productRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Product not found: " + id));
-        return toDTO(p);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        return toDTO(product);
     }
 
     public List<ProductDTO> listProducts() {
-        return productRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        List<Product> products = productRepository.findAll();
+        if (products.isEmpty()) {
+            throw new ResourceNotFoundException("No products available.");
+        }
+
+        List<ProductDTO> dtoList = new ArrayList<>();
+        for (Product p : products) {
+            dtoList.add(toDTO(p));
+        }
+
+        return dtoList;
     }
 
-    @Transactional
-    public ProductDTO updateProduct(Long id,
-                                    String name,
-                                    String description,
-                                    Double price,
-                                    Double priceBeforeDiscount,
-                                    Long categoryId,
-                                    MultipartFile[] newImages) throws IOException {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Product not found: " + id));
+    public ProductDTO updateProduct(
+            Long id,
+            String name,
+            String description,
+            Double price,
+            Double priceBeforeDiscount,
+            Long categoryId,
+            MultipartFile[] images
+    ) throws IOException {
 
-        if (name != null) product.setName(name);
-        if (description != null) product.setDescription(description);
-        if (price != null) product.setPrice(price);
-        if (priceBeforeDiscount != null) product.setPriceBeforeDiscount(priceBeforeDiscount);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+
+        // Apply updates if provided
+        if (name != null && !name.trim().isEmpty()) {
+            product.setName(name);
+        }
+        if (description != null) {
+            product.setDescription(description);
+        }
+        if (price != null) {
+            if (price <= 0) throw new BadRequestException("Price must be greater than 0.");
+            product.setPrice(price);
+        }
+        if (priceBeforeDiscount != null) {
+            if (priceBeforeDiscount < product.getPrice()) {
+                throw new BadRequestException("Price before discount must be >= price.");
+            }
+            product.setPriceBeforeDiscount(priceBeforeDiscount);
+        }
         if (categoryId != null) {
             Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new NoSuchElementException("Category not found: " + categoryId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
             product.setCategory(category);
         }
 
-        // append new images if provided
-        if (newImages != null && newImages.length > 0) {
-            storeAndAttachImages(product, newImages);
-        }
+        Product updated = productRepository.save(product);
 
-        Product saved = productRepository.save(product);
-        return toDTO(saved);
-    }
+        // Add new images if provided
+        if (images != null) {
+            for (MultipartFile image : images) {
+                if (image.isEmpty()) continue;
 
-    @Transactional
-    public void deleteProduct(Long id) throws IOException {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Product not found: " + id));
+                String filename = UUID.randomUUID() + "_" + image.getOriginalFilename();
+                Path target = uploadDir.resolve(filename);
+                Files.copy(image.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
-        // delete all image files from disk
-        if (product.getImages() != null) {
-            for (ProductImage img : product.getImages()) {
-                deleteFileForImageUrl(img.getImgUrl());
-                productImageRepository.delete(img); // also remove from DB
+                ProductImage img = new ProductImage();
+                img.setImgUrl(filename);
+                img.setProduct(updated);
+                productImageRepository.save(img);
             }
         }
 
+        return toDTO(updated);
+    }
+
+    public void deleteProduct(Long id) throws IOException {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+
+        // delete images from disk
+        List<ProductImage> imgs = productImageRepository.findByProductId(id);
+        for (ProductImage img : imgs) {
+            Path file = uploadDir.resolve(img.getImgUrl()).normalize();
+            Files.deleteIfExists(file);
+        }
         productRepository.delete(product);
     }
 
-    /**
-     * Load a saved image as a Resource (for controller to serve).
-     * filename must be the stored filename (UUID + extension).
-     */
     public Resource loadImageAsResource(String filename) throws MalformedURLException {
         Path file = uploadDir.resolve(filename).normalize();
         Resource resource = new UrlResource(file.toUri());
-        if (resource.exists() && resource.isReadable()) return resource;
-        throw new MalformedURLException("File not found or not readable: " + filename);
-    }
-
-    /* ------------------ helpers ------------------ */
-
-    private void storeAndAttachImages(Product product, MultipartFile[] images) throws IOException {
-        if (images == null || images.length == 0) return;
-
-        for (MultipartFile file : images) {
-            if (file == null || file.isEmpty()) continue;
-
-            String original = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-            String ext = "";
-            int dot = original.lastIndexOf('.');
-            if (dot >= 0) ext = original.substring(dot);
-
-            String filename = UUID.randomUUID().toString() + ext;
-            Path target = uploadDir.resolve(filename);
-
-            // copy file to disk (replace existing if unlikely collision)
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-
-            // build accessible URL
-            String url = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/api/products/images/")
-                    .path(filename)
-                    .toUriString();
-
-            ProductImage img = ProductImage.builder()
-                    .imgUrl(url)
-                    .product(product)
-                    .build();
-
-            product.getImages().add(img);
+        if (!resource.exists()) {
+            throw new ResourceNotFoundException("Image not found: " + filename);
         }
-    }
-
-    private void deleteFileForImageUrl(String imgUrl) {
-        if (imgUrl == null || imgUrl.isBlank()) return;
-        try {
-            String filename = imgUrl.substring(imgUrl.lastIndexOf('/') + 1);
-            if (filename.isBlank()) return;
-            Path filePath = uploadDir.resolve(filename).normalize();
-            Files.deleteIfExists(filePath);
-        } catch (Exception e) {
-            // don't fail product deletion if file removal fails; log it instead
-            log.warn("Failed to delete image file for url={} : {}", imgUrl, e.getMessage());
-        }
+        return resource;
     }
 
     private ProductDTO toDTO(Product p) {
+        List<ProductImageDTO> imageDTOs = new ArrayList<>();
+        List<ProductImage> images = Optional.ofNullable(p.getImages()).orElse(Collections.emptyList());
+        for (ProductImage img : images) {
+            imageDTOs.add(new ProductImageDTO(img.getId(), img.getImgUrl()));
+        }
+
         return ProductDTO.builder()
                 .id(p.getId())
                 .name(p.getName())
@@ -199,10 +208,8 @@ public class ProductService {
                 .price(p.getPrice())
                 .priceBeforeDiscount(p.getPriceBeforeDiscount())
                 .categoryId(p.getCategory() != null ? p.getCategory().getId() : null)
-                .images(Optional.ofNullable(p.getImages()).orElse(Collections.emptyList())
-                        .stream()
-                        .map(img -> new ProductImageDTO(img.getId(), img.getImgUrl()))
-                        .collect(Collectors.toList()))
+                .images(imageDTOs)
                 .build();
     }
+
 }
