@@ -5,6 +5,7 @@ public enum OrderStatus {
     PROCESSING("Processing"),
     SHIPPED("Shipped"),
     DELIVERED("Delivered"),
+    RETURNED("Returned"),
     CANCELLED("Cancelled");
 
     private final String displayName;
