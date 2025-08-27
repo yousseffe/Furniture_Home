@@ -3,6 +3,7 @@ package com.furniturehome.dto;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class FavoriteDTO {
     private Long id;
-    private Integer userId;
+    private UUID userId;
     private Long productId;
     private String productName;
     private String productDescription;

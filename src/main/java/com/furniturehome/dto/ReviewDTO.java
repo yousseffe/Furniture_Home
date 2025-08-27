@@ -14,7 +14,7 @@ import java.util.UUID;
 public class ReviewDTO {
     private UUID review_id;
     private Long product_id;
-    private Integer user_id;
+    private UUID userid;
     private String comment;
     private Integer rating;
     private LocalDateTime created_at;

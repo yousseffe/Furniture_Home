@@ -10,7 +10,7 @@ public class CartToOrderMapper {
 
     public static OrderRequestDTO mapCartToOrderRequest(CartDTO cart, String shippingAddress, String notes) {
         return OrderRequestDTO.builder()
-                .userId(cart.getUserId() != null ? UUID.fromString(cart.getUserId().toString()) : null)
+                .userId(cart.getUserid() != null ? UUID.fromString(cart.getUserid().toString()) : null)
                 .shippingAddress(shippingAddress)
                 .notes(notes)
                 .orderItems(mapCartItemsToOrderItems(cart.getItems()))

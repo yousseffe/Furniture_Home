@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -11,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CartDTO {
     private Long id;
-    private Integer userId;
+    private UUID userid;
     private List<CartItemDTO> items;
     private Double totalPrice;
     private Integer totalItems;

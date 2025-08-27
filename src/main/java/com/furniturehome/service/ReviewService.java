@@ -35,7 +35,7 @@ public class ReviewService {
     private ReviewDTO convertToDTO(Review review){
         ReviewDTO reviewDTO = new ReviewDTO();
         reviewDTO.setReview_id(review.getReview_id());
-        reviewDTO.setUser_id(review.getUser().getId());
+        reviewDTO.setUserid(review.getUser().getId());
         reviewDTO.setProduct_id(review.getProduct().getId());
         reviewDTO.setRating(review.getRating());
         reviewDTO.setComment(review.getComment());
@@ -47,14 +47,12 @@ public class ReviewService {
         Product product = productRepository.findById(reviewDTO.getProduct_id())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-
-        User user = userRepository.findById(reviewDTO.getUser_id())
+        User user = userRepository.findById(reviewDTO.getUserid())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Review review = convertToEntity(reviewDTO, user,product);
         return convertToDTO(reviewRepository.save(review));
     }
-
 
     public List<ReviewDTO> getReviewsByProduct(Long id){
         Product product = productRepository.findById(id).
@@ -66,7 +64,7 @@ public class ReviewService {
                 .collect(Collectors.toList());
     }
 
-    public List<ReviewDTO> getReviewsByUser(Integer id){
+    public List<ReviewDTO> getReviewsByUser(UUID id){
         User user = userRepository.findById(id).
                 orElseThrow(()->new RuntimeException("User not found"));
 
@@ -76,9 +74,8 @@ public class ReviewService {
                 .collect(Collectors.toList());
     }
 
-
     public void deleteById(UUID reviewId){
         reviewRepository.deleteById(reviewId);
     }
-
 }
+

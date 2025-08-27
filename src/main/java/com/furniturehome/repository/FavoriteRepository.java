@@ -6,11 +6,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
-    List<Favorite> findByUserId(Integer userId);
-    Optional<Favorite> findByUserIdAndProductId(Integer userId, Long productId);
-    boolean existsByUserIdAndProductId(Integer userId, Long productId);
-    void deleteByUserIdAndProductId(Integer userId, Long productId);
+    List<Favorite> findByUserId(UUID userId);
+    Optional<Favorite> findByUserIdAndProductId(UUID userId, Long productId);
+    boolean existsByUserIdAndProductId(UUID userId, Long productId);
+    void deleteByUserIdAndProductId(UUID userId, Long productId);
 }

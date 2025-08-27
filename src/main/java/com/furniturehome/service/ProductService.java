@@ -128,7 +128,6 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
-        // Apply updates if provided
         if (name != null && !name.trim().isEmpty()) {
             product.setName(name);
         }
@@ -153,7 +152,6 @@ public class ProductService {
 
         Product updated = productRepository.save(product);
 
-        // Add new images if provided
         if (images != null) {
             for (MultipartFile image : images) {
                 if (image.isEmpty()) continue;
@@ -176,7 +174,6 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
-        // delete images from disk
         List<ProductImage> imgs = productImageRepository.findByProductId(id);
         for (ProductImage img : imgs) {
             Path file = uploadDir.resolve(img.getImgUrl()).normalize();

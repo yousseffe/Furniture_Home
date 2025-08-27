@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user")
@@ -16,9 +17,9 @@ import java.util.List;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "user_id", updatable = false, nullable = false, unique = true)
+    private UUID id;   
 
     @Column(nullable = false)
     private String name;
@@ -42,5 +43,5 @@ public class User {
 
     @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    List<Order> orders = new ArrayList<>();
+    private List<Order> orders = new ArrayList<>();
 }

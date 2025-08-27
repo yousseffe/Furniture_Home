@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/favorites")
@@ -20,7 +21,7 @@ public class FavoriteController {
     private final FavoriteService favoriteService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<FavoriteDTO>> getUserFavorites(@PathVariable Integer userId) {
+    public ResponseEntity<List<FavoriteDTO>> getUserFavorites(@PathVariable UUID userId) {
         try {
             List<FavoriteDTO> favorites = favoriteService.getUserFavorites(userId);
             return ResponseEntity.ok(favorites);
@@ -31,7 +32,7 @@ public class FavoriteController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<FavoriteDTO> addToFavorites(
-            @PathVariable Integer userId,
+            @PathVariable UUID userId,
             @Valid @RequestBody FavoriteRequestDTO request,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -47,7 +48,7 @@ public class FavoriteController {
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> removeFromFavorites(
-            @PathVariable Integer userId,
+            @PathVariable UUID userId,
             @Valid @RequestBody FavoriteRequestDTO request,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -63,7 +64,7 @@ public class FavoriteController {
 
     @GetMapping("/{userId}/check")
     public ResponseEntity<Boolean> isProductInFavorites(
-            @PathVariable Integer userId,
+            @PathVariable UUID userId,
             @RequestParam Long productId) {
         try {
             boolean isFavorite = favoriteService.isProductInFavorites(userId, productId);

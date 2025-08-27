@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,17 +28,16 @@ public class CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
-    public CartDTO getCartByUserId(Integer userId) {
+    public CartDTO getCartByUserId(UUID userId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseGet(() -> createCartForUser(userId));
-        
         return convertToDTO(cart);
     }
 
-    public CartDTO addItemToCart(Integer userId, Long productId, Integer quantity) {
+    public CartDTO addItemToCart(UUID userId, Long productId, Integer quantity) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
@@ -62,7 +62,7 @@ public class CartService {
         return convertToDTO(cart);
     }
 
-    public CartDTO updateCartItemQuantity(Integer userId, Long productId, Integer quantity) {
+    public CartDTO updateCartItemQuantity(UUID userId, Long productId, Integer quantity) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
@@ -79,7 +79,7 @@ public class CartService {
         return convertToDTO(cart);
     }
 
-    public CartDTO removeItemFromCart(Integer userId, Long productId) {
+    public CartDTO removeItemFromCart(UUID userId, Long productId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
@@ -88,14 +88,14 @@ public class CartService {
         return convertToDTO(cart);
     }
 
-    public void clearCart(Integer userId) {
+    public void clearCart(UUID userId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
         cartItemRepository.deleteByCartId(cart.getId());
     }
 
-    private Cart createCartForUser(Integer userId) {
+    private Cart createCartForUser(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -113,7 +113,7 @@ public class CartService {
 
         return CartDTO.builder()
                 .id(cart.getId())
-                .userId(cart.getUser().getId())
+                .userid(cart.getUser().getId())
                 .items(itemDTOs)
                 .totalPrice(cart.getTotalPrice())
                 .totalItems(cart.getTotalItems())
@@ -124,8 +124,8 @@ public class CartService {
 
     private CartItemDTO convertCartItemToDTO(CartItem cartItem) {
         Product product = cartItem.getProduct();
-        String productImage = product.getImages() != null && !product.getImages().isEmpty() 
-                ? product.getImages().get(0).getImgUrl() 
+        String productImage = product.getImages() != null && !product.getImages().isEmpty()
+                ? product.getImages().get(0).getImgUrl()
                 : null;
 
         return CartItemDTO.builder()

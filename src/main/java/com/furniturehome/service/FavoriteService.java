@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,21 +24,20 @@ public class FavoriteService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
-    public List<FavoriteDTO> getUserFavorites(Integer userId) {
+    public List<FavoriteDTO> getUserFavorites(UUID userId) {
         List<Favorite> favorites = favoriteRepository.findByUserId(userId);
         return favorites.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    public FavoriteDTO addToFavorites(Integer userId, Long productId) {
+    public FavoriteDTO addToFavorites(UUID userId, Long productId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // Check if already in favorites
         if (favoriteRepository.existsByUserIdAndProductId(userId, productId)) {
             throw new RuntimeException("Product is already in favorites");
         }
@@ -51,18 +51,18 @@ public class FavoriteService {
         return convertToDTO(savedFavorite);
     }
 
-    public void removeFromFavorites(Integer userId, Long productId) {
+    public void removeFromFavorites(UUID userId, Long productId) {
         favoriteRepository.deleteByUserIdAndProductId(userId, productId);
     }
 
-    public boolean isProductInFavorites(Integer userId, Long productId) {
+    public boolean isProductInFavorites(UUID userId, Long productId) {
         return favoriteRepository.existsByUserIdAndProductId(userId, productId);
     }
 
     private FavoriteDTO convertToDTO(Favorite favorite) {
         Product product = favorite.getProduct();
-        String productImage = product.getImages() != null && !product.getImages().isEmpty() 
-                ? product.getImages().get(0).getImgUrl() 
+        String productImage = product.getImages() != null && !product.getImages().isEmpty()
+                ? product.getImages().get(0).getImgUrl()
                 : null;
 
         return FavoriteDTO.builder()

@@ -5,6 +5,9 @@ import com.furniturehome.dto.CartRequestDTO;
 import com.furniturehome.service.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.UUID;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +21,7 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<CartDTO> getCart(@PathVariable Integer userId) {
+    public ResponseEntity<CartDTO> getCart(@PathVariable UUID userId) {
         try {
             CartDTO cart = cartService.getCartByUserId(userId);
             return ResponseEntity.ok(cart);
@@ -29,7 +32,7 @@ public class CartController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<CartDTO> addItemToCart(
-            @PathVariable Integer userId,
+            @PathVariable UUID userId,
             @Valid @RequestBody CartRequestDTO request,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -45,7 +48,7 @@ public class CartController {
 
     @PatchMapping("/{userId}")
     public ResponseEntity<CartDTO> updateCartItemQuantity(
-            @PathVariable Integer userId,
+            @PathVariable UUID userId,
             @Valid @RequestBody CartRequestDTO request,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -61,7 +64,7 @@ public class CartController {
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<CartDTO> removeItemFromCart(
-            @PathVariable Integer userId,
+            @PathVariable UUID userId,
             @Valid @RequestBody CartRequestDTO request,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -76,7 +79,7 @@ public class CartController {
     }
 
     @DeleteMapping("/{userId}/clear")
-    public ResponseEntity<Void> clearCart(@PathVariable Integer userId) {
+    public ResponseEntity<Void> clearCart(@PathVariable UUID userId) {
         try {
             cartService.clearCart(userId);
             return ResponseEntity.ok().build();
@@ -84,4 +87,5 @@ public class CartController {
             return ResponseEntity.badRequest().build();
         }
     }
+
 }
