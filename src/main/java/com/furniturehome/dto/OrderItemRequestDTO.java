@@ -9,6 +9,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItemRequestDTO {
-    private UUID productId;
+    private Long productId; //TODO: Change to uuid
+//    private UUID productId;
     private Integer quantity;
 }

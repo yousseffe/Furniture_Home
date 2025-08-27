@@ -1,7 +1,7 @@
 package com.furniturehome.dto;
 
 import lombok.*;
-import java.time.LocalDateTime;
+
 import java.util.UUID;
 
 @Getter
@@ -9,9 +9,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderStatusHistoryDTO {
-    private UUID id;
+public class OrderStatusRequestDTO {
     private String status;
-    private LocalDateTime createdAt;
     private UUID orderId;
 }

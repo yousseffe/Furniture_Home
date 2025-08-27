@@ -5,21 +5,12 @@ import com.furniturehome.dto.OrderItemRequestDTO;
 import com.furniturehome.model.Order;
 import com.furniturehome.model.OrderItem;
 import com.furniturehome.model.Product;
-import com.furniturehome.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class OrderItemMapper {
-
-    private ProductRepository productRepository;
-
-    @Autowired
-    public OrderItemMapper(ProductRepository productRepository) {
-        this.productRepository =  productRepository;
-    }
 
     public OrderItemDTO toOrderItemDTO(OrderItem orderItem) {
         if (orderItem == null) return null;
@@ -34,12 +25,8 @@ public class OrderItemMapper {
                 .build();
     }
 
-    public OrderItem toOrderItemEntity(OrderItemRequestDTO dto, Order order) {
+    public OrderItem toOrderItemEntity(OrderItemRequestDTO dto, Order order,  Product product) {
         if (dto == null || order == null ) return null;
-
-        long longId = dto.getProductId().hashCode(); // REMOVE HASHCODE completely wrong
-        Product product = productRepository.findById(longId)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getProductId()));
 
         return OrderItem.builder()
                 .quantity(dto.getQuantity())

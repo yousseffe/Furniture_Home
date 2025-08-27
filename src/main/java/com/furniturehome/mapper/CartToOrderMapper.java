@@ -1,28 +1,32 @@
 package com.furniturehome.mapper;
 
 import com.furniturehome.dto.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class CartToOrderMapper {
+@Component
+@RequiredArgsConstructor
+public class CartToOrderMapper {    //TODO: add conversion methods to regular DTOs
 
-    public static OrderRequestDTO mapCartToOrderRequest(CartDTO cart, String shippingAddress, String notes) {
+    public OrderRequestDTO mapCartToOrderRequest(CartDTO cart, String shippingAddress, String notes) {
         return OrderRequestDTO.builder()
-                .userId(cart.getUserId() != null ? UUID.fromString(cart.getUserId().toString()) : null)
+                .userId(cart.getUserId() != null ? cart.getUserId() : null)
                 .shippingAddress(shippingAddress)
-                .notes(notes)
+                .notes(notes != null ? notes : "")
                 .orderItems(mapCartItemsToOrderItems(cart.getItems()))
                 .build();
     }
 
-    private static List<OrderItemRequestDTO> mapCartItemsToOrderItems(List<CartItemDTO> cartItems) {
+    private List<OrderItemRequestDTO> mapCartItemsToOrderItems(List<CartItemDTO> cartItems) {
         if (cartItems == null) return List.of();
 
         return cartItems.stream()
                 .map(item -> OrderItemRequestDTO.builder()
-                        .productId(UUID.fromString(item.getProductId().toString()))
+                        .productId(item.getProductId())
                         .quantity(item.getQuantity())
                         .build()
                 )
