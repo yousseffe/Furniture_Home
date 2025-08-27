@@ -238,5 +238,25 @@ public class OrderService {
         return orderMapper.toOrderDTO(order);
     }
 
+    public List<OrderResponseDTO> viewUserOrders(UUID userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        List<Order> orders = orderRepository.findAllByUser(user);
+
+        return orders.stream()
+                .map(orderMapper::toOrderResponseDTO)
+                .toList();
+
+    }
+
+    public List<OrderResponseDTO> viewUserOrdersById(UUID userId) {
+        List<Order> orders = orderRepository.findAllByUserId(userId);
+
+        return orders.stream()
+                .map(orderMapper::toOrderResponseDTO)
+                .toList();
+    }
+
 }
 

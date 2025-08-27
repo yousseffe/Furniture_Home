@@ -2,6 +2,7 @@ package com.furniturehome.mapper;
 
 import com.furniturehome.dto.OrderDTO;
 import com.furniturehome.dto.OrderRequestDTO;
+import com.furniturehome.dto.OrderResponseDTO;
 import com.furniturehome.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -47,6 +48,22 @@ public class OrderMapper {
                 .shippingAddress(dto.getShippingAddress())
                 .notes(dto.getNotes())
                 .user(user)
+                .build();
+    }
+
+    public OrderResponseDTO toOrderResponseDTO(Order order){
+        if (order == null) return null;
+
+        return OrderResponseDTO.builder()
+                .id(order.getId())
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .total(order.getTotal())
+                .total(order.getTotal())
+                .status(order.getStatus().name())
+                .shippingAddress(order.getShippingAddress())
+                .notes(order.getNotes())
+                .userId(order.getUser() != null ? order.getUser().getId() : null)
                 .build();
     }
 
