@@ -1,6 +1,11 @@
 package com.furniturehome.mapper;
 
-import java.util.List;
+import com.furniturehome.dto.OrderDTO;
+import com.furniturehome.dto.OrderRequestDTO;
+import com.furniturehome.model.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
 import java.util.UUID;
 import java.util.stream.Collectors;
 
