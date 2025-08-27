@@ -22,8 +22,7 @@ public class OrderDTO {
     private String shippingAddress;
     private String notes;
 
-//    private UUID userId;
-    private Integer userId;     //TODO: Change to uuid
+    private UUID userId;
 
     private List<OrderItemDTO> orderItems;
     private List<OrderStatusHistoryDTO> orderStatusHistory;

@@ -14,7 +14,7 @@ public class CartToOrderMapper {    //TODO: add conversion methods to regular DT
 
     public OrderRequestDTO mapCartToOrderRequest(CartDTO cart, String shippingAddress, String notes) {
         return OrderRequestDTO.builder()
-                .userId(cart.getUserid() != null ? UUID.fromString(cart.getUserid().toString()) : null)
+                .userId(cart.getUserid() != null ? cart.getUserid() : null)
                 .shippingAddress(shippingAddress)
                 .notes(notes != null ? notes : "")
                 .orderItems(mapCartItemsToOrderItems(cart.getItems()))
@@ -30,6 +30,6 @@ public class CartToOrderMapper {    //TODO: add conversion methods to regular DT
                         .quantity(item.getQuantity())
                         .build()
                 )
-                .collect(Collectors.toList());
+                .toList();
     }
 }

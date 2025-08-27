@@ -61,7 +61,6 @@ public class OrderService {
 
     @Transactional
     public OrderDTO createOrder(OrderRequestDTO orderDTO){
-
         User user = userRepository.findById(orderDTO.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + orderDTO.getUserId()));
 
@@ -102,8 +101,6 @@ public class OrderService {
         }
         return productsById;
     }
-
-
 
     @Transactional
     public OrderDTO updateOrderStatus(OrderStatusRequestDTO orderStatusRequestDTO) {
