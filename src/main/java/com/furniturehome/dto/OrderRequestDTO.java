@@ -10,8 +10,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class OrderRequestDTO {
-    private Integer userId; //TODO: Change to uuid
-//    private UUID userId;
+   private UUID userId;
     private String shippingAddress;
     private String notes;
 
