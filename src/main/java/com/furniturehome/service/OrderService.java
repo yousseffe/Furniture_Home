@@ -243,12 +243,3 @@ public class OrderService {
 
 }
 
-//TODO: crud operations on order, its items, & status history
-// add & remove order aka create and cancel *
-// add & remove order item *
-// view order & order items *
-// update order item *
-// update order status and history *
-
-//TODO: cart to order conversion *
-// need to have user, product, cart repos here too
