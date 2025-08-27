@@ -3,10 +3,9 @@ package com.furniturehome.mapper;
 import com.furniturehome.dto.OrderDTO;
 import com.furniturehome.dto.OrderRequestDTO;
 import com.furniturehome.model.*;
-        import lombok.RequiredArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -28,8 +27,7 @@ public class OrderMapper {
                 .status(order.getStatus().name())
                 .shippingAddress(order.getShippingAddress())
                 .notes(order.getNotes())
-//                .userId(order.getUser() != null ? order.getUser().getId() : null)
-                .userId(order.getUser() != null ? UUID.fromString(order.getUser().getId().toString()) : null)
+                .userId(order.getUser() != null ? order.getUser().getId() : null)
                 .orderItems(order.getOrderItems().stream()
                         .map(orderItemMapper::toOrderItemDTO)
                         .collect(Collectors.toList()))
@@ -47,23 +45,12 @@ public class OrderMapper {
     public Order toOrderEntity(OrderRequestDTO dto, User user) {
         if (dto == null) return null;
 
-        Order order = Order.builder()
+        return Order.builder()
                 .status(OrderStatus.PENDING)   // dto.getStatus() != null ? OrderStatus.valueOf(dto.getStatus()) : OrderStatus.PENDING
                 .shippingAddress(dto.getShippingAddress())
                 .notes(dto.getNotes())
                 .user(user)
                 .build();
-
-        // Map order items using the resolved products list
-        List<OrderItem> orderItems = dto.getOrderItems().stream()
-                .map(itemDto -> orderItemMapper.toOrderItemEntity(itemDto, order))
-                .toList();
-
-        order.setOrderItems(orderItems);
-        // recalc total from items
-        order.recalculateTotal();
-
-        return order;
     }
 
 
