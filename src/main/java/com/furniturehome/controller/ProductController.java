@@ -29,54 +29,67 @@ public class ProductController {
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize();
     }
 
+    // Create product
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductDTO> createProduct(
-            @RequestParam String name,
-            @RequestParam(required = false) String description,
-            @RequestParam Double price,
-            @RequestParam Double priceBeforeDiscount,
-            @RequestParam Long categoryId,
-            @RequestParam(name = "images", required = false) MultipartFile[] images
+            @RequestParam("name") String name,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("price") Double price,
+            @RequestParam("priceBeforeDiscount") Double priceBeforeDiscount,
+            @RequestParam("categoryId") Long categoryId,
+            @RequestParam(value = "images", required = false) MultipartFile[] images
     ) throws IOException {
 
         ProductDTO dto = productService.createProduct(name, description, price, priceBeforeDiscount, categoryId, images);
         return ResponseEntity
                 .created(URI.create("/api/products/" + dto.getId()))
-                .body(dto); // 🔹 returns 201 Created
+                .body(dto); // 🔹 201 Created
     }
 
+    // Get product by ID
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDTO> getProduct(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getProduct(id)); // 🔹 200 OK
+    public ResponseEntity<ProductDTO> getProduct(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(productService.getProduct(id));
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<ProductDTO>> listProducts() {
-        return ResponseEntity.ok(productService.listProducts()); // 🔹 200 OK
+    // List all products
+    @GetMapping
+    public ResponseEntity<List<ProductDTO>> listProducts(
+            @RequestParam(value = "categoryId", required = false) Long categoryId
+    ) {
+        if (categoryId != null) {
+            // If categoryId provided return only products in that category
+            return ResponseEntity.ok(productService.listProductsByCategory(categoryId));
+        }
+        // Otherwise return all products
+        return ResponseEntity.ok(productService.listProducts());
     }
 
+    // Update product
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductDTO> updateProduct(
-            @PathVariable Long id,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) Double price,
-            @RequestParam(required = false) Double priceBeforeDiscount,
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(name = "images", required = false) MultipartFile[] images
+            @PathVariable("id") Long id,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "price", required = false) Double price,
+            @RequestParam(value = "priceBeforeDiscount", required = false) Double priceBeforeDiscount,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "images", required = false) MultipartFile[] images
     ) throws IOException {
         ProductDTO dto = productService.updateProduct(id, name, description, price, priceBeforeDiscount, categoryId, images);
-        return ResponseEntity.ok(dto); // 🔹 200 OK
+        return ResponseEntity.ok(dto);
     }
 
+    // Delete product
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) throws IOException {
+    public ResponseEntity<Void> deleteProduct(@PathVariable("id") Long id) throws IOException {
         productService.deleteProduct(id);
-        return ResponseEntity.noContent().build(); // 🔹 204 No Content
+        return ResponseEntity.noContent().build();
     }
 
+    // Serve product image
     @GetMapping("/images/{filename:.+}")
-    public ResponseEntity<Resource> serveImage(@PathVariable String filename) throws IOException {
+    public ResponseEntity<Resource> serveImage(@PathVariable("filename") String filename) throws IOException {
         Resource resource = productService.loadImageAsResource(filename);
         Path file = uploadDir.resolve(filename).normalize();
         String contentType = Files.probeContentType(file);

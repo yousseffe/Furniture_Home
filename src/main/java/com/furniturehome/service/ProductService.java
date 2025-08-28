@@ -59,6 +59,9 @@ public class ProductService {
         if (price == null || price <= 0) {
             throw new BadRequestException("Price must be greater than 0.");
         }
+        if (priceBeforeDiscount == null || priceBeforeDiscount <= 0) {
+        	throw new BadRequestException("Price before discount must be greater than 0.");
+        }
         if (priceBeforeDiscount != null && priceBeforeDiscount < price) {
             throw new BadRequestException("Price before discount must be greater than or equal to price.");
         }
@@ -114,6 +117,14 @@ public class ProductService {
 
         return dtoList;
     }
+    
+    public List<ProductDTO> listProductsByCategory(Long categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+        return products.stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
 
     public ProductDTO updateProduct(
             Long id,
