@@ -18,8 +18,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
-    private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
@@ -32,8 +30,8 @@ public class OrderService {
     private final OrderStatusHistoryMapper orderStatusHistoryMapper;
 
     @Transactional
-    public OrderDTO createOrder(CartDTO cartDTO, String shippingAddress, String notes){
-        OrderRequestDTO orderDTO = cartToOrderMapper.mapCartToOrderRequest(cartDTO, shippingAddress, notes);
+    public OrderDTO createOrder(CheckoutRequestDTO checkoutRequestDTO){
+        OrderRequestDTO orderDTO = cartToOrderMapper.mapCartToOrderRequest(checkoutRequestDTO);
 
         User user = userRepository.findById(orderDTO.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + orderDTO.getUserId()));

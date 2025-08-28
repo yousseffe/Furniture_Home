@@ -10,13 +10,14 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class CartToOrderMapper {    //TODO: add conversion methods to regular DTOs
+public class CartToOrderMapper {
 
-    public OrderRequestDTO mapCartToOrderRequest(CartDTO cart, String shippingAddress, String notes) {
+    public OrderRequestDTO mapCartToOrderRequest(CheckoutRequestDTO checkoutRequestDTO) {
+        CartDTO cart = checkoutRequestDTO.getCart();
         return OrderRequestDTO.builder()
                 .userId(cart.getUserid() != null ? cart.getUserid() : null)
-                .shippingAddress(shippingAddress)
-                .notes(notes != null ? notes : "")
+                .shippingAddress(checkoutRequestDTO.getShippingAddress())
+                .notes(checkoutRequestDTO.getNotes() != null ? checkoutRequestDTO.getNotes() : "")
                 .orderItems(mapCartItemsToOrderItems(cart.getItems()))
                 .build();
     }
