@@ -20,8 +20,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
-    private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
@@ -191,16 +189,13 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDTO deleteOrderItem(OrderItemRequestDTO orderItemRequestDTO, UUID orderId, Long productId){    //TODO: change productId type
+    public OrderDTO deleteOrderItem(UUID orderId, Long productId){    //TODO: change productId type
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
             if ((order.getStatus() != OrderStatus.PENDING) && (order.getStatus() != OrderStatus.PROCESSING)) {
                 throw new BadRequestException("Cannot delete items from a " + order.getStatus() + " order");
             }
-
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
         Optional<OrderItem> existingItem = order.getOrderItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))

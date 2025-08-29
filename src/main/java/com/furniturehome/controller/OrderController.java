@@ -4,7 +4,6 @@ import com.furniturehome.dto.*;
 import com.furniturehome.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,10 +57,9 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}/items/{productId}")
-    public ResponseEntity<OrderDTO> deleteOrderItem(@Valid @RequestBody OrderItemRequestDTO orderItemRequestDTO,
-                                                    @PathVariable UUID orderId,
+    public ResponseEntity<OrderDTO> deleteOrderItem(@Valid @PathVariable UUID orderId,
                                                     @PathVariable Long productId) {
-        return ResponseEntity.ok(orderService.deleteOrderItem(orderItemRequestDTO, orderId, productId));
+        return ResponseEntity.ok(orderService.deleteOrderItem(orderId, productId));
     }
 
     @PutMapping("/{orderId}/items/{productId}")
