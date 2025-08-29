@@ -1,5 +1,7 @@
 package com.furniturehome.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.UUID;
@@ -10,6 +12,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class OrderStatusRequestDTO {
-    private String status;
+    @NotNull(message = "Order ID is required")
     private UUID orderId;
+
+    @NotBlank(message = "Status is required")
+    private String status;
 }

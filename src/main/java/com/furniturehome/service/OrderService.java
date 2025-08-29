@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
@@ -253,6 +254,14 @@ public class OrderService {
 
         return orders.stream()
                 .map(orderMapper::toOrderResponseDTO)
+                .toList();
+    }
+
+    public List<OrderStatusHistoryDTO> viewOrderStatusHistory(UUID orderId){
+        List<OrderStatusHistory> history = orderStatusHistoryRepository.findAllByOrderId(orderId);
+
+        return history.stream()
+                .map(orderStatusHistoryMapper::toOrderStatusHistoryDTO)
                 .toList();
     }
 

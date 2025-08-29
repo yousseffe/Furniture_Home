@@ -2,6 +2,7 @@ package com.furniturehome.controller;
 
 import com.furniturehome.dto.*;
 import com.furniturehome.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,19 +21,19 @@ public class OrderController {
     // ----------------- CREATE -----------------
 
     @PostMapping("/create")
-    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
+    public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody OrderRequestDTO orderRequestDTO) {
         return ResponseEntity.ok(orderService.createOrder(orderRequestDTO));
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<OrderDTO> checkoutOrder(@RequestBody CheckoutRequestDTO checkoutRequestDTO) {
+    public ResponseEntity<OrderDTO> checkoutOrder(@Valid @RequestBody CheckoutRequestDTO checkoutRequestDTO) {
         return ResponseEntity.ok(orderService.createOrder(checkoutRequestDTO));
     }
 
     // ----------------- STATUS -----------------
 
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable UUID orderId,
+    public ResponseEntity<OrderDTO> updateOrderStatus(@Valid @PathVariable UUID orderId,
                                                       @RequestBody OrderStatusRequestDTO request) {
         // Ensure the orderId in URL and body match (optional validation)
         if (!orderId.equals(request.getOrderId())) {
@@ -42,7 +43,7 @@ public class OrderController {
     }
 
     @PostMapping("/{orderId}/cancel")
-    public ResponseEntity<OrderDTO> cancelOrder(@PathVariable UUID orderId) {
+    public ResponseEntity<OrderDTO> cancelOrder(@Valid @PathVariable UUID orderId) {
         OrderDTO dto = orderService.viewOrderDetails(orderId);
         return ResponseEntity.ok(orderService.cancelOrder(dto));
     }
@@ -50,21 +51,21 @@ public class OrderController {
     // ----------------- ORDER ITEMS -----------------
 
     @PostMapping("/{orderId}/items/{productId}")
-    public ResponseEntity<OrderDTO> addOrderItem(@RequestBody OrderItemRequestDTO orderItemRequestDTO,
+    public ResponseEntity<OrderDTO> addOrderItem(@Valid @RequestBody OrderItemRequestDTO orderItemRequestDTO,
                                                  @PathVariable UUID orderId,
                                                  @PathVariable Long productId) {
         return ResponseEntity.ok(orderService.addOrderItem(orderItemRequestDTO, orderId, productId));
     }
 
     @DeleteMapping("/{orderId}/items/{productId}")
-    public ResponseEntity<OrderDTO> deleteOrderItem(@RequestBody OrderItemRequestDTO orderItemRequestDTO,
+    public ResponseEntity<OrderDTO> deleteOrderItem(@Valid @RequestBody OrderItemRequestDTO orderItemRequestDTO,
                                                     @PathVariable UUID orderId,
                                                     @PathVariable Long productId) {
         return ResponseEntity.ok(orderService.deleteOrderItem(orderItemRequestDTO, orderId, productId));
     }
 
     @PutMapping("/{orderId}/items/{productId}")
-    public ResponseEntity<OrderDTO> updateOrderItem(@PathVariable UUID orderId,
+    public ResponseEntity<OrderDTO> updateOrderItem(@Valid @PathVariable UUID orderId,
                                                     @PathVariable Long productId,
                                                     @RequestParam Integer quantity) {
         return ResponseEntity.ok(orderService.updateOrderItem(orderId, productId, quantity));
@@ -73,17 +74,22 @@ public class OrderController {
     // ----------------- READ -----------------
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderDTO> viewOrderDetails(@PathVariable UUID orderId) {
+    public ResponseEntity<OrderDTO> viewOrderDetails(@Valid @PathVariable UUID orderId) {
         return ResponseEntity.ok(orderService.viewOrderDetails(orderId));
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrderResponseDTO>> viewUserOrders(@PathVariable UUID userId,
+    public ResponseEntity<List<OrderResponseDTO>> viewUserOrders(@Valid @PathVariable UUID userId,
                                                                  @RequestParam(defaultValue = "false") boolean byIdOnly) {
         if (byIdOnly) {
             return ResponseEntity.ok(orderService.viewUserOrdersById(userId));
         }
         return ResponseEntity.ok(orderService.viewUserOrders(userId));
+    }
+
+    @GetMapping("/{orderId}/status/history")
+    public ResponseEntity<List<OrderStatusHistoryDTO>> viewOrderStatusHistory(@Valid @PathVariable UUID orderId) {
+        return ResponseEntity.ok(orderService.viewOrderStatusHistory(orderId));
     }
 }
 
