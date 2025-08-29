@@ -51,6 +51,13 @@ public class OrderService {
         order.setOrderItems(orderItems);
         order.recalculateTotal();
 
+        OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
+                .status(order.getStatus())
+                .order(order)
+                .build();
+
+        order.addOrderStatusHistory(orderStatusHistory);
+
 //        cartRepository.deleteById(cartDTO.getId()); // or mark inactive
 
         // with cascade, items persist automatically
@@ -76,6 +83,13 @@ public class OrderService {
 
         order.setOrderItems(orderItems);
         order.recalculateTotal();
+
+        OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
+                .status(order.getStatus())
+                .order(order)
+                .build();
+
+        order.addOrderStatusHistory(orderStatusHistory);
 
         return orderMapper.toOrderDTO(orderRepository.save(order)); // with cascade, items persist automatically
     }
@@ -245,6 +259,7 @@ public class OrderService {
 
         return orders.stream()
                 .map(orderMapper::toOrderResponseDTO)
+                .filter(order -> !"Cancelled".equalsIgnoreCase(order.getStatus()))
                 .toList();
 
     }

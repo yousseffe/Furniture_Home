@@ -15,7 +15,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll() 
                 .requestMatchers("/api/products/**").permitAll()
                 .requestMatchers("/api/categories/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/api/orders/**").permitAll()
+//                .requestMatchers("/api/users/**").permitAll()
+//                .requestMatchers("/api/cart/**").permitAll()
+                    .anyRequest().authenticated()
             );
         return http.build();
     }
