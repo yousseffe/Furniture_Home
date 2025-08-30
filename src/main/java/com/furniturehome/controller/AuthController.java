@@ -3,6 +3,7 @@ package com.furniturehome.controller;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -31,20 +32,18 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(@RequestBody User user) {
-        User savedUser = userService.createUser(user); 
-        String token = authService.signup(savedUser);
+        String token = authService.signup(user); 
 
         return ResponseEntity.ok(
             new AuthResponse(
-                "Welcome " + savedUser.getName() + "!",
+                "Welcome " + user.getName() + "!",
                 token,
-                savedUser.getId(),
-                savedUser.getEmail(),
-                savedUser.getRole()
+                user.getId(),
+                user.getEmail(),
+                user.getRole()
             )
         );
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestParam String email, @RequestParam String password) {
@@ -64,6 +63,7 @@ public class AuthController {
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CUSTOMER')")
     @PutMapping("/update/{id}")
     public ResponseEntity<User> updateProfile(@PathVariable UUID id, @RequestBody UserDTO userDTO) {
         User user = userService.getUserById(id);
